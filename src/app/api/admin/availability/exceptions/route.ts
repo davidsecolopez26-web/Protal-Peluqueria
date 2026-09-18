@@ -1,15 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { InMemoryAvailabilityRepository } from '@/lib/db/adapters/in-memory'
-import { InMemoryAppointmentRepository } from '@/lib/db/adapters/in-memory'
-import { AvailabilityScheduler } from '@/lib/availability'
-
-// Initialize repositories and scheduler
-const availabilityRepo = new InMemoryAvailabilityRepository()
-const appointmentRepo = new InMemoryAppointmentRepository()
-const scheduler = new AvailabilityScheduler(availabilityRepo, appointmentRepo)
+import { availabilityRepo, availabilityScheduler, initializeDefaults } from '@/lib/container'
 
 // POST /api/admin/availability/exceptions - Add exception
 export async function POST(request: NextRequest) {
+  await initializeDefaults()
+
   try {
     const body = await request.json()
     const { date, timeSlots } = body
@@ -28,7 +23,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const exception = await scheduler.addDayException(date, timeSlots)
+    const exception = await availabilityScheduler.addDayException(date, timeSlots)
     return NextResponse.json({ exception }, { status: 201 })
   } catch (error: unknown) {
     const message = error instanceof Error ? error.message : 'Failed to add exception'
@@ -39,6 +34,8 @@ export async function POST(request: NextRequest) {
 
 // GET /api/admin/availability/exceptions - List exceptions
 export async function GET(request: NextRequest) {
+  await initializeDefaults()
+
   try {
     const { searchParams } = new URL(request.url)
     const dateFrom = searchParams.get('dateFrom') || undefined
@@ -57,6 +54,8 @@ export async function GET(request: NextRequest) {
 
 // DELETE /api/admin/availability/exceptions?date=YYYY-MM-DD - Remove exception
 export async function DELETE(request: NextRequest) {
+  await initializeDefaults()
+
   try {
     const { searchParams } = new URL(request.url)
     const date = searchParams.get('date')
@@ -68,7 +67,7 @@ export async function DELETE(request: NextRequest) {
       )
     }
 
-    const deleted = await scheduler.removeDayException(date)
+    const deleted = await availabilityScheduler.removeDayException(date)
 
     if (!deleted) {
       return NextResponse.json(

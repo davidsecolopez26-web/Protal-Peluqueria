@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { InMemoryServiceRepository } from '@/lib/db/adapters/in-memory'
-import { ServiceCatalog } from '@/lib/services'
-
-// Initialize repository and service catalog
-const repository = new InMemoryServiceRepository()
-const serviceCatalog = new ServiceCatalog(repository)
+import { serviceCatalog, initializeDefaults } from '@/lib/container'
 
 // GET /api/admin/services - List all services
 export async function GET() {
+  await initializeDefaults()
+
   try {
     const services = await serviceCatalog.listServices()
     return NextResponse.json({ services })
@@ -22,6 +19,8 @@ export async function GET() {
 
 // POST /api/admin/services - Create a new service
 export async function POST(request: NextRequest) {
+  await initializeDefaults()
+
   try {
     const body = await request.json()
     const { name, durationMinutes } = body

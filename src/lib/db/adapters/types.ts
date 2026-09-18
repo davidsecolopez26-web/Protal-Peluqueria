@@ -9,6 +9,8 @@ import type {
   AppointmentFilters,
   WeeklyPattern,
   DayException,
+  AdminSession,
+  AdminSessionCreateInput,
 } from '@/lib/types'
 
 // ============================================
@@ -39,6 +41,13 @@ export interface AvailabilityRepository {
   removeDayException(date: string): Promise<boolean>
   getDayException(date: string): Promise<DayException | null>
   listDayExceptions(dateFrom?: string, dateTo?: string): Promise<DayException[]>
+}
+
+export interface AdminSessionRepository {
+  create(input: AdminSessionCreateInput): Promise<AdminSession>
+  getByToken(token: string): Promise<AdminSession | null>
+  delete(token: string): Promise<boolean>
+  cleanupExpired(): Promise<number>
 }
 
 // ============================================

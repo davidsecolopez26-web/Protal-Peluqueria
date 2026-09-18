@@ -111,9 +111,9 @@ export class AvailabilityScheduler {
     }
 
     // Get existing appointments for this date
-    const dateObj = new Date(date)
-    const dayAfter = new Date(dateObj)
-    dayAfter.setDate(dayAfter.getDate() + 1)
+    const [year, month, day] = date.split('-').map(Number)
+    const dateObj = new Date(year, month - 1, day, 0, 0, 0, 0)
+    const dayAfter = new Date(year, month - 1, day + 1, 23, 59, 59, 999)
 
     const existingAppointments = await this.appointmentRepo.list({
       dateFrom: dateObj,
@@ -133,7 +133,7 @@ export class AvailabilityScheduler {
       const gaps = this.findGapsInSlot(
         slot,
         confirmedAppointments,
-        dateObj,
+        date,
         totalDuration
       )
 
@@ -182,7 +182,8 @@ export class AvailabilityScheduler {
     }
 
     // Otherwise, use weekly pattern
-    const dayOfWeek = new Date(date).getDay()
+    const [year, month, day] = date.split('-').map(Number)
+    const dayOfWeek = new Date(year, month - 1, day, 12, 0, 0).getDay()
     const pattern = await this.getWeeklyPattern()
 
     const dayNames: (keyof WeeklyPattern)[] = [
@@ -198,7 +199,7 @@ export class AvailabilityScheduler {
   private findGapsInSlot(
     slot: TimeSlot,
     appointments: Appointment[],
-    date: Date,
+    date: string,
     duration: number
   ): TimeSlot[] {
     const gaps: TimeSlot[] = []
@@ -208,15 +209,17 @@ export class AvailabilityScheduler {
     // Get appointments that overlap with this slot
     const overlappingAppointments = appointments.filter(appt => {
       const apptStart = new Date(appt.startTime)
-      const apptDate = apptStart.toISOString().split('T')[0]
-      return apptDate === date.toISOString().split('T')[0]
+      const apptDate = `${apptStart.getFullYear()}-${String(apptStart.getMonth() + 1).padStart(2, '0')}-${String(apptStart.getDate()).padStart(2, '0')}`
+      return apptDate === date
     }).sort((a, b) => new Date(a.startTime).getTime() - new Date(b.startTime).getTime())
 
     let currentPosition = slotStartMinutes
 
     for (const appt of overlappingAppointments) {
-      const apptStartMinutes = new Date(appt.startTime).getHours() * 60 + new Date(appt.startTime).getMinutes()
-      const apptEndMinutes = apptStartMinutes + (new Date(appt.endTime).getTime() - new Date(appt.startTime).getTime()) / 60000
+      const apptStart = new Date(appt.startTime)
+      const apptEnd = new Date(appt.endTime)
+      const apptStartMinutes = apptStart.getHours() * 60 + apptStart.getMinutes()
+      const apptEndMinutes = apptStartMinutes + (apptEnd.getTime() - apptStart.getTime()) / 60000
 
       // Check if there's a gap before this appointment
       if (apptStartMinutes - currentPosition >= duration) {

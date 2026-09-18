@@ -1,13 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { InMemoryServiceRepository } from '@/lib/db/adapters/in-memory'
-import { ServiceCatalog } from '@/lib/services'
-
-// Initialize repository and service catalog
-const repository = new InMemoryServiceRepository()
-const serviceCatalog = new ServiceCatalog(repository)
+import { serviceCatalog, initializeDefaults } from '@/lib/container'
 
 // PATCH /api/admin/services/[id] - Update a service
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  await initializeDefaults()
+
   try {
     const { id } = await params
     const body = await request.json()
@@ -49,6 +46,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
 // DELETE /api/admin/services/[id] - Delete a service
 export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  await initializeDefaults()
+
   try {
     const { id } = await params
 

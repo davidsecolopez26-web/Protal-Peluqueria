@@ -110,6 +110,21 @@ export interface AppointmentFilters {
 }
 
 // ============================================
+// Admin Types
+// ============================================
+export interface AdminSession {
+  id: string
+  token: string
+  expiresAt: Date
+  createdAt: Date
+}
+
+export interface AdminSessionCreateInput {
+  token: string
+  expiresAt: Date
+}
+
+// ============================================
 // Default Weekly Pattern
 // ============================================
 export const DEFAULT_WEEKLY_PATTERN: WeeklyPattern = {
