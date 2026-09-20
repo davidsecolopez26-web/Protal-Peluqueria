@@ -1,13 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { InMemoryServiceRepository } from '@/lib/db/adapters/in-memory'
-import { ServiceCatalog } from '@/lib/services'
-
-// Initialize repository and service catalog
-const repository = new InMemoryServiceRepository()
-const serviceCatalog = new ServiceCatalog(repository)
+import { serviceCatalog, initializeDefaults } from '@/lib/container'
+import { requireAdminAuth } from '@/lib/admin/requireAdminAuth'
 
 // PATCH /api/admin/services/[id] - Update a service
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  await initializeDefaults()
+
+  const auth = await requireAdminAuth(request)
+  if (!auth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const { id } = await params
     const body = await request.json()
@@ -48,7 +51,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 }
 
 // DELETE /api/admin/services/[id] - Delete a service
-export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  await initializeDefaults()
+
+  const auth = await requireAdminAuth(request)
+  if (!auth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const { id } = await params
 

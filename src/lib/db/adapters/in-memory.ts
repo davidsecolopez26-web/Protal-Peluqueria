@@ -9,8 +9,10 @@ import type {
   AppointmentFilters,
   WeeklyPattern,
   DayException,
+  AdminSession,
+  AdminSessionCreateInput,
 } from '@/lib/types'
-import type { ServiceRepository, AppointmentRepository, AvailabilityRepository, NotificationHub } from './types'
+import type { ServiceRepository, AppointmentRepository, AvailabilityRepository, NotificationHub, AdminSessionRepository } from './types'
 
 // ============================================
 // In-Memory Service Repository (for testing)
@@ -215,5 +217,49 @@ export class InMemoryNotificationHub implements NotificationHub {
 
   clearLogs(): void {
     this.logs = []
+  }
+}
+
+// ============================================
+// In-Memory Admin Session Repository (for testing)
+// ============================================
+export class InMemoryAdminSessionRepository implements AdminSessionRepository {
+  private sessions: Map<string, AdminSession> = new Map()
+
+  async create(input: AdminSessionCreateInput): Promise<AdminSession> {
+    const session: AdminSession = {
+      id: crypto.randomUUID(),
+      token: input.token,
+      expiresAt: input.expiresAt,
+      createdAt: new Date(),
+    }
+    this.sessions.set(session.token, session)
+    return session
+  }
+
+  async getByToken(token: string): Promise<AdminSession | null> {
+    const session = this.sessions.get(token)
+    if (!session) return null
+    if (session.expiresAt <= new Date()) {
+      this.sessions.delete(token)
+      return null
+    }
+    return session
+  }
+
+  async delete(token: string): Promise<boolean> {
+    return this.sessions.delete(token)
+  }
+
+  async cleanupExpired(): Promise<number> {
+    const now = new Date()
+    let count = 0
+    for (const [token, session] of this.sessions) {
+      if (session.expiresAt <= now) {
+        this.sessions.delete(token)
+        count++
+      }
+    }
+    return count
   }
 }

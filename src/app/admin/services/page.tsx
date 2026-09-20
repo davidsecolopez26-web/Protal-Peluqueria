@@ -4,6 +4,6 @@ export const metadata = {
   title: 'Gestión de Servicios - Admin',
 }
 
-export default function ServicesPage() {
+export default function AdminServicesPage() {
   return <ServiceManager />
 }
