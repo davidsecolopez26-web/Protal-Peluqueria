@@ -1,17 +1,17 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { AdminLogoutButton } from '@/components/admin/AdminLogoutButton'
 import { AdminNotificationsLink } from '@/components/admin/AdminNotificationsLink'
 
 export function AdminGroupLayout({
   children,
+  loginUrl,
 }: {
   children: React.ReactNode
+  loginUrl: string
 }) {
-  const router = useRouter()
   const [authenticated, setAuthenticated] = useState<boolean | null>(null)
 
   useEffect(() => {
@@ -46,7 +46,7 @@ export function AdminGroupLayout({
             Abre la página de login usando tu URL secreta.
           </div>
           <a
-            href="/admin/admin-secret"
+            href={loginUrl}
             className="inline-block px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold transition-colors"
           >
             Ir al login
