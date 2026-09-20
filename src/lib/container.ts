@@ -8,6 +8,7 @@ import {
 import { ServiceCatalog } from '@/lib/services'
 import { AvailabilityScheduler } from '@/lib/availability'
 import { AppointmentService } from '@/lib/appointments'
+import { createAdminAuthService } from '@/lib/admin'
 import { DEFAULT_WEEKLY_PATTERN } from '@/lib/types'
 
 // Global container for singleton in-memory storage across Next.js API routes & Server Actions
@@ -17,6 +18,7 @@ const globalForContainer = globalThis as unknown as {
   availabilityRepo?: InMemoryAvailabilityRepository
   notificationHub?: InMemoryNotificationHub
   adminSessionRepo?: InMemoryAdminSessionRepository
+  adminAuthService?: ReturnType<typeof createAdminAuthService>
   serviceCatalog?: ServiceCatalog
   availabilityScheduler?: AvailabilityScheduler
   appointmentService?: AppointmentService
@@ -46,6 +48,9 @@ export const appointmentService =
     availabilityScheduler,
     notificationHub
   )
+export const adminAuthService =
+  globalForContainer.adminAuthService ??
+  createAdminAuthService(adminSessionRepo)
 
 // Preserve singletons across hot reloads in Next.js development
 if (process.env.NODE_ENV !== 'production') {
@@ -57,6 +62,7 @@ if (process.env.NODE_ENV !== 'production') {
   globalForContainer.serviceCatalog = serviceCatalog
   globalForContainer.availabilityScheduler = availabilityScheduler
   globalForContainer.appointmentService = appointmentService
+  globalForContainer.adminAuthService = adminAuthService
 }
 
 /**

@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { serviceCatalog, initializeDefaults } from '@/lib/container'
+import { requireAdminAuth } from '@/lib/admin/requireAdminAuth'
 
 // GET /api/admin/services - List all services
-export async function GET() {
+export async function GET(request: NextRequest) {
   await initializeDefaults()
+
+  const auth = await requireAdminAuth(request)
+  if (!auth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   try {
     const services = await serviceCatalog.listServices()
@@ -20,6 +26,11 @@ export async function GET() {
 // POST /api/admin/services - Create a new service
 export async function POST(request: NextRequest) {
   await initializeDefaults()
+
+  const auth = await requireAdminAuth(request)
+  if (!auth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   try {
     const body = await request.json()

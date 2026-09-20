@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { serviceCatalog, initializeDefaults } from '@/lib/container'
+import { requireAdminAuth } from '@/lib/admin/requireAdminAuth'
 
 // PATCH /api/admin/services/[id] - Update a service
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   await initializeDefaults()
+
+  const auth = await requireAdminAuth(request)
+  if (!auth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   try {
     const { id } = await params
@@ -45,8 +51,13 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 }
 
 // DELETE /api/admin/services/[id] - Delete a service
-export async function DELETE(_request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   await initializeDefaults()
+
+  const auth = await requireAdminAuth(request)
+  if (!auth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   try {
     const { id } = await params

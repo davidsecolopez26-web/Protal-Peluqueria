@@ -1,12 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { appointmentService, initializeDefaults } from '@/lib/container'
+import { requireAdminAuth } from '@/lib/admin/requireAdminAuth'
 
 // GET /api/admin/appointments/[id] - Get single appointment by ID
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   await initializeDefaults()
+
+  const auth = await requireAdminAuth(request)
+  if (!auth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   try {
     const { id } = await params
@@ -34,6 +40,11 @@ export async function PATCH(
   { params }: { params: Promise<{ id: string }> }
 ) {
   await initializeDefaults()
+
+  const auth = await requireAdminAuth(request)
+  if (!auth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   try {
     const { id } = await params

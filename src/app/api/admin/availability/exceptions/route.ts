@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { availabilityRepo, availabilityScheduler, initializeDefaults } from '@/lib/container'
+import { requireAdminAuth } from '@/lib/admin/requireAdminAuth'
 
 // POST /api/admin/availability/exceptions - Add exception
 export async function POST(request: NextRequest) {
   await initializeDefaults()
+
+  const auth = await requireAdminAuth(request)
+  if (!auth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   try {
     const body = await request.json()
@@ -36,6 +42,11 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   await initializeDefaults()
 
+  const auth = await requireAdminAuth(request)
+  if (!auth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
+
   try {
     const { searchParams } = new URL(request.url)
     const dateFrom = searchParams.get('dateFrom') || undefined
@@ -55,6 +66,11 @@ export async function GET(request: NextRequest) {
 // DELETE /api/admin/availability/exceptions?date=YYYY-MM-DD - Remove exception
 export async function DELETE(request: NextRequest) {
   await initializeDefaults()
+
+  const auth = await requireAdminAuth(request)
+  if (!auth) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+  }
 
   try {
     const { searchParams } = new URL(request.url)
