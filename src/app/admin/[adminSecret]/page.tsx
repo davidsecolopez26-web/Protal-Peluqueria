@@ -1,11 +1,10 @@
-'use client'
-
 import { AdminSecretLogin } from '@/components/admin/AdminSecretLogin'
 
-export default function AdminSecretPage({
+export default async function AdminSecretPage({
   params,
 }: {
-  params: { adminSecret: string }
+  params: Promise<{ adminSecret: string }>
 }) {
-  return <AdminSecretLogin secretToken={params.adminSecret} />
+  const { adminSecret } = await params
+  return <AdminSecretLogin secretToken={adminSecret} />
 }
